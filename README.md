@@ -1,4 +1,6 @@
 # 深蓝学院从零开始学习VIO课程代码和PPT
+源文件是另一个开源仓库的：https://github.com/cggos/shenlan_vio_course。本人自行学习该课程并且对某些代码进行了自我理解的注释，感谢原作者提供的学习资料。
+
 ## Shenlan VIO Course
 
 深蓝学院《视觉SLAM进阶：从零开始手写VIO》第一期
