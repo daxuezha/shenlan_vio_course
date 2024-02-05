@@ -1,5 +1,5 @@
 # 深蓝学院从零开始学习VIO课程代码和PPT
-# Shenlan VIO Course
+## Shenlan VIO Course
 
 深蓝学院《视觉SLAM进阶：从零开始手写VIO》第一期
 
@@ -15,9 +15,3 @@
 * [x] 第6讲 视觉前端
 * [x] 第7讲 VINS初始化和VIO系统
 * [x] 第8讲 VINS回顾与展望
-
-## Certificate
-
-<p align="center">
-  <img src="certificate.jpg">
-</p>
