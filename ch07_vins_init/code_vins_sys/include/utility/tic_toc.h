@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 
+// 设定的时间获取类,用于计算程序运行时间
 class TicToc
 {
   public:

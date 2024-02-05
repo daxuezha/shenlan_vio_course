@@ -6,16 +6,19 @@ using namespace std;
 using namespace cv;
 using namespace pangolin;
 System::System(string sConfig_file_)
-    :bStart_backend(true)
+    :bStart_backend(true) // bStart_backend 表示后端系统线程启动
 {
-    string sConfig_file = sConfig_file_ + "sim_config.yaml";
+    string sConfig_file = sConfig_file_ + "euroc_config.yaml"; // 原本的演示代码的配置文件
+    // string sConfig_file = sConfig_file_ + "sim_config.yaml"; // 作业需要的配置文件
 
     cout << "1 System() sConfig_file: " << sConfig_file << endl;
-    readParameters(sConfig_file);
+    readParameters(sConfig_file); // 相机参数、IMU参数、特征跟踪参数等
 
-    trackerData[0].readIntrinsicParameter(sConfig_file);
+    trackerData[0].readIntrinsicParameter(sConfig_file); // 读取相机内参生成相机模型
 
-    estimator.setParameter();
+    estimator.setParameter(); // 设置相机和imu参数
+
+    // 以追加模式或者输出模式打开文件，如果文件不存在则创建文件
     ofs_pose.open("./pose_output.txt",fstream::app | fstream::out);
     if(!ofs_pose.is_open())
     {
@@ -52,7 +55,7 @@ void System::PubImageData(double dStampSec, Mat &img)
     {
         cout << "1 PubImageData skip the first detected feature, which doesn't contain optical flow speed" << endl;
         init_feature = 1;
-        return;
+        return; // 跳过第一帧图像
     }
 
     if (first_image_flag)
@@ -60,10 +63,10 @@ void System::PubImageData(double dStampSec, Mat &img)
         cout << "2 PubImageData first_image_flag" << endl;
         first_image_flag = false;
         first_image_time = dStampSec;
-        last_image_time = dStampSec;
-        return;
+        last_image_time = dStampSec; // 上一帧图像的时间戳
+        return; // 跳过第二帧图像
     }
-    // detect unstable camera stream
+    // detect unstable camera stream，检测相机图像流是否不稳定，是的话重置特征跟踪器
     if (dStampSec - last_image_time > 1.0 || dStampSec < last_image_time)
     {
         cerr << "3 PubImageData image discontinue! reset the feature tracker!" << endl;
@@ -74,10 +77,12 @@ void System::PubImageData(double dStampSec, Mat &img)
     }
     last_image_time = dStampSec;
     // frequency control
+    // pub_count 频率控制，如果当前帧图像的发布频率小于设定的频率FREQ，config文件中，则发布当前帧图像
     if (round(1.0 * pub_count / (dStampSec - first_image_time)) <= FREQ)
     {
         PUB_THIS_FRAME = true;
         // reset the frequency control
+        // 如果随着时间的推移，当前帧图像的发布频率接近设定的频率，则重置频率控制
         if (abs(1.0 * pub_count / (dStampSec - first_image_time) - FREQ) < 0.01 * FREQ)
         {
             first_image_time = dStampSec;
@@ -91,12 +96,14 @@ void System::PubImageData(double dStampSec, Mat &img)
 
     TicToc t_r;
     // cout << "3 PubImageData t : " << dStampSec << endl;
-    trackerData[0].readImage(img, dStampSec);
+
+    // 读取图像并进行特征跟踪，readImage函数在trackerData.cpp中定义，是特征跟踪的核心函数
+    trackerData[0].readImage(img, dStampSec); // 读取图像并进行特征跟踪并且保存
 
     for (unsigned int i = 0;; i++)
     {
         bool completed = false;
-        completed |= trackerData[0].updateID(i);
+        completed |= trackerData[0].updateID(i); // 按位或运算，只要有一个为真，结果就为真
 
         if (!completed)
             break;
@@ -167,6 +174,7 @@ void System::PubImageData(double dStampSec, Mat &img)
     
 }
 
+// 下面的代码是run_sim.cpp中的PubImageData函数，上面的是run_euroc.cpp中的PubImageData函数
 void System::PubImageData(double dStampSec, std::string filename)
 {
     if (!init_feature)
@@ -320,6 +328,7 @@ vector<pair<vector<ImuConstPtr>, ImgConstPtr>> System::getMeasurements()
     return measurements;
 }
 
+// IMU数据的获取函数
 void System::PubImuData(double dStampSec, const Eigen::Vector3d &vGyr, 
     const Eigen::Vector3d &vAcc)
 {
@@ -337,12 +346,12 @@ void System::PubImuData(double dStampSec, const Eigen::Vector3d &vGyr,
     // cout << "1 PubImuData t: " << fixed << imu_msg->header
     //     << " acc: " << imu_msg->linear_acceleration.transpose()
     //     << " gyr: " << imu_msg->angular_velocity.transpose() << endl;
-    m_buf.lock();
-    imu_buf.push(imu_msg);
+    m_buf.lock(); // 上锁，防止多线程同时访问img_buf
+    imu_buf.push(imu_msg); // 将IMU数据压入队列，根据共享指针的特性，不会复制数据
     // cout << "1 PubImuData t: " << fixed << imu_msg->header 
     //     << " imu_buf size:" << imu_buf.size() << endl;
-    m_buf.unlock();
-    con.notify_one();
+    m_buf.unlock(); // 解锁
+    con.notify_one(); // 唤醒系统后端主线程
 }
 
 // thread: visual-inertial odometry

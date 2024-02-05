@@ -21,8 +21,8 @@ void Estimator::setParameter()
 {
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
-        tic[i] = TIC[i];
-        ric[i] = RIC[i];
+        tic[i] = TIC[i]; // 相机到IMU的平移量
+        ric[i] = RIC[i]; // 相机到IMU的旋转量
         // cout << "1 Estimator::setParameter tic: " << tic[i].transpose()
         //     << " ric: " << ric[i] << endl;
     }
