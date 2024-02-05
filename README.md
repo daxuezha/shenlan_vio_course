@@ -1,4 +1,4 @@
-# 深蓝学院从零开始学习VIO课程代码和PPT test
+# 深蓝学院从零开始学习VIO课程代码和PPT
 ## Shenlan VIO Course
 
 深蓝学院《视觉SLAM进阶：从零开始手写VIO》第一期
